@@ -15,7 +15,8 @@ interface VisualizationChartsProps {
 }
 
 export function VisualizationCharts({ data, forecasts }: VisualizationChartsProps) {
-  const chartData = data.map((item) => ({
+  const chartData = data.map((item, index) => ({
+    id: item.id || `data-${index}`,
     name: `${item.month.substring(0, 3)} ${item.year}`,
     'Total Tests': item.totalTests,
     CBC: item.cbc,
@@ -29,6 +30,7 @@ export function VisualizationCharts({ data, forecasts }: VisualizationChartsProp
     const lastData = data[data.length - 1];
     const nextMonth = new Date(lastData.year, getMonthIndex(lastData.month) + 1);
     forecastData.push({
+      id: 'forecast',
       name: `${getMonthName(nextMonth.getMonth())} ${nextMonth.getFullYear()}`,
       'Total Tests': forecasts.totalTests,
       CBC: forecasts.cbc,
@@ -46,11 +48,12 @@ export function VisualizationCharts({ data, forecasts }: VisualizationChartsProp
           <h2 className="text-xl font-bold text-gray-800">Test Volume Trends & Forecast</h2>
         </div>
         <ResponsiveContainer width="100%" height={400}>
-          <LineChart data={forecastData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="name" stroke="#6b7280" />
-            <YAxis stroke="#6b7280" />
+          <LineChart data={forecastData} key="line-chart-main">
+            <CartesianGrid key="line-grid" strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis key="line-xaxis" dataKey="name" stroke="#6b7280" />
+            <YAxis key="line-yaxis" stroke="#6b7280" />
             <Tooltip
+              key="line-tooltip"
               contentStyle={{
                 backgroundColor: '#fff',
                 border: '1px solid #e5e7eb',
@@ -58,7 +61,7 @@ export function VisualizationCharts({ data, forecasts }: VisualizationChartsProp
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
               }}
             />
-            <Legend />
+            <Legend key="line-legend" />
             <Line
               key="total-tests"
               type="monotone"
@@ -100,11 +103,12 @@ export function VisualizationCharts({ data, forecasts }: VisualizationChartsProp
       <div className="bg-white rounded-xl shadow-lg p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-6">Test Type Distribution</h2>
         <ResponsiveContainer width="100%" height={350}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
-            <XAxis dataKey="name" stroke="#6b7280" />
-            <YAxis stroke="#6b7280" />
+          <BarChart data={chartData} key="bar-chart-main">
+            <CartesianGrid key="bar-grid" strokeDasharray="3 3" stroke="#e5e7eb" />
+            <XAxis key="bar-xaxis" dataKey="name" stroke="#6b7280" />
+            <YAxis key="bar-yaxis" stroke="#6b7280" />
             <Tooltip
+              key="bar-tooltip"
               contentStyle={{
                 backgroundColor: '#fff',
                 border: '1px solid #e5e7eb',
@@ -112,7 +116,7 @@ export function VisualizationCharts({ data, forecasts }: VisualizationChartsProp
                 boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
               }}
             />
-            <Legend />
+            <Legend key="bar-legend" />
             <Bar key="bar-cbc" dataKey="CBC" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
             <Bar key="bar-urinalysis" dataKey="Urinalysis" fill="#10b981" radius={[8, 8, 0, 0]} />
             <Bar key="bar-fecalysis" dataKey="Fecalysis" fill="#f59e0b" radius={[8, 8, 0, 0]} />
