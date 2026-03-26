@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { DataInput } from './components/DataInput';
 import { Dashboard } from './components/Dashboard';
 import { Header } from './components/Header';
-import { Activity } from 'lucide-react';
+import { ModelTraining } from './components/ModelTraining';
+import { Activity, Brain, Database } from 'lucide-react';
+import * as tf from '@tensorflow/tfjs';
 
 export interface TestData {
   id: string;
@@ -36,7 +38,28 @@ export default function App() {
     },
   ]);
 
-  const [activeView, setActiveView] = useState<'dashboard' | 'input'>('dashboard');
+  const [activeView, setActiveView] = useState<'dashboard' | 'input' | 'training'>('dashboard');
+
+  const [mlModel, setMlModel] = useState<tf.Sequential | null>(null);
+  const [normalizationParams, setNormalizationParams] = useState<{
+    totalTests: { min: number; max: number };
+    cbc: { min: number; max: number };
+    urinalysis: { min: number; max: number };
+    fecalysis: { min: number; max: number };
+  } | null>(null);
+
+  const handleModelTrained = (
+    model: tf.Sequential,
+    params: {
+      totalTests: { min: number; max: number };
+      cbc: { min: number; max: number };
+      urinalysis: { min: number; max: number };
+      fecalysis: { min: number; max: number };
+    }
+  ) => {
+    setMlModel(model);
+    setNormalizationParams(params);
+  };
 
   const addData = (data: Omit<TestData, 'id'>) => {
     const newData: TestData = {
@@ -57,7 +80,7 @@ export default function App() {
 
       <div className="container mx-auto px-4 py-8">
         {/* Navigation Tabs */}
-        <div className="mb-8 flex gap-4 justify-center">
+        <div className="mb-8 flex gap-4 justify-center flex-wrap">
           <button
             onClick={() => setActiveView('dashboard')}
             className={`px-6 py-3 rounded-lg font-medium transition-all ${
@@ -72,6 +95,19 @@ export default function App() {
             </div>
           </button>
           <button
+            onClick={() => setActiveView('training')}
+            className={`px-6 py-3 rounded-lg font-medium transition-all ${
+              activeView === 'training'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white text-gray-700 hover:bg-gray-50'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              <Brain size={20} />
+              ML Training
+            </div>
+          </button>
+          <button
             onClick={() => setActiveView('input')}
             className={`px-6 py-3 rounded-lg font-medium transition-all ${
               activeView === 'input'
@@ -79,14 +115,28 @@ export default function App() {
                 : 'bg-white text-gray-700 hover:bg-gray-50'
             }`}
           >
-            Add New Data
+            <div className="flex items-center gap-2">
+              <Database size={20} />
+              Add New Data
+            </div>
           </button>
         </div>
 
         {/* Main Content */}
         <div className="max-w-7xl mx-auto">
           {activeView === 'dashboard' ? (
-            <Dashboard data={historicalData} onDeleteData={deleteData} />
+            <Dashboard
+              data={historicalData}
+              onDeleteData={deleteData}
+              mlModel={mlModel}
+              normalizationParams={normalizationParams}
+            />
+          ) : activeView === 'training' ? (
+            <ModelTraining
+              data={historicalData}
+              onModelTrained={handleModelTrained}
+              isModelTrained={mlModel !== null}
+            />
           ) : (
             <DataInput onSubmit={addData} onCancel={() => setActiveView('dashboard')} />
           )}

@@ -3,14 +3,28 @@ import { DataTable } from './DataTable';
 import { VisualizationCharts } from './VisualizationCharts';
 import { ForecastResults } from './ForecastResults';
 import { calculateForecasts } from '../utils/forecasting';
+import { predictWithML } from '../utils/mlForecasting';
+import * as tf from '@tensorflow/tfjs';
 
 interface DashboardProps {
   data: TestData[];
   onDeleteData: (id: string) => void;
+  mlModel: tf.Sequential | null;
+  normalizationParams: {
+    totalTests: { min: number; max: number };
+    cbc: { min: number; max: number };
+    urinalysis: { min: number; max: number };
+    fecalysis: { min: number; max: number };
+  } | null;
 }
 
-export function Dashboard({ data, onDeleteData }: DashboardProps) {
-  const forecasts = calculateForecasts(data);
+export function Dashboard({ data, onDeleteData, mlModel, normalizationParams }: DashboardProps) {
+  // Use ML model if available, otherwise use linear regression
+  const forecasts = mlModel && normalizationParams
+    ? predictWithML(mlModel, data, normalizationParams)
+    : calculateForecasts(data);
+
+  const forecastMethod = mlModel ? 'Machine Learning (Neural Network)' : 'Linear Regression';
 
   return (
     <div className="space-y-8">
@@ -45,7 +59,7 @@ export function Dashboard({ data, onDeleteData }: DashboardProps) {
       </div>
 
       {/* Forecast Results */}
-      {data.length >= 2 && <ForecastResults forecasts={forecasts} />}
+      {data.length >= 2 && <ForecastResults forecasts={forecasts} forecastMethod={forecastMethod} />}
 
       {/* Visualization Charts */}
       {data.length > 0 && <VisualizationCharts data={data} forecasts={forecasts} />}

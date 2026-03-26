@@ -9,16 +9,23 @@ interface Forecast {
 
 interface ForecastResultsProps {
   forecasts: Forecast;
+  forecastMethod?: string;
 }
 
-export function ForecastResults({ forecasts }: ForecastResultsProps) {
+export function ForecastResults({ forecasts, forecastMethod = 'Linear Regression' }: ForecastResultsProps) {
+  const isMLMethod = forecastMethod.includes('Machine Learning');
+
   return (
-    <div className="bg-gradient-to-r from-green-500 to-emerald-600 rounded-xl shadow-xl p-8 text-white">
-      <div className="flex items-center gap-3 mb-6">
-        <TrendingUp size={32} />
-        <div>
-          <h2 className="text-2xl font-bold">Forecast for Next Month</h2>
-          <p className="text-green-100 text-sm">Based on historical trend analysis</p>
+    <div className={`bg-gradient-to-r ${isMLMethod ? 'from-purple-500 to-indigo-600' : 'from-green-500 to-emerald-600'} rounded-xl shadow-xl p-8 text-white`}>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-3">
+          <TrendingUp size={32} />
+          <div>
+            <h2 className="text-2xl font-bold">Forecast for Next Month</h2>
+            <p className={`${isMLMethod ? 'text-purple-100' : 'text-green-100'} text-sm`}>
+              Forecast Method: <strong>{forecastMethod}</strong>
+            </p>
+          </div>
         </div>
       </div>
 
